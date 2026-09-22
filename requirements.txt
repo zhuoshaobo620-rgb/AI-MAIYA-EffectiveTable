@@ -1,0 +1,4 @@
+openpyxl
+msoffcrypto-tool
+playwright
+pywin32

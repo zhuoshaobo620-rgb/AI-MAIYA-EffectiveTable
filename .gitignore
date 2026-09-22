@@ -1,0 +1,62 @@
+# 信息流有效表 — 最小安全跟踪范围（Batch4A Recovery03）
+# 禁止追踪：凭据、生产 Excel、CRM 导出、运行时产物、缓存
+
+# 凭据与含内嵌密钥的 production 主文件（见 PRODUCTION_CODE_FINGERPRINTS.json）
+daily_report.py
+daily_report.py.backup.*
+*.backup.*
+
+# 环境密钥
+.env
+.env.*
+!.env.example
+
+# 业务数据与导出
+*.xlsx
+*.xls
+*.csv
+
+# 运行时 / 下载 / 存档
+runtime/
+downloads/
+download/
+完成/
+data/
+06_日志/
+backups/
+temp/
+tmp/
+output/
+outputs/
+
+# 原型与历史备份（含硬编码密码）
+formula_eval_proto.py
+backups/
+
+# 日志与截图
+*.log
+*.png
+*.jpg
+*.jpeg
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# Python / 虚拟环境
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Playwright / 浏览器配置（若出现在本项目下）
+playwright-report/
+test-results/
+.browser/
+browser-profile*/
+
+# 本地协作缓存（非源代码）
+.workbuddy/
+
+# 根目录大量自动备份 xlsx 已在 *.xlsx 覆盖

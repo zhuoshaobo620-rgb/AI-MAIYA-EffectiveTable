@@ -1,0 +1,49 @@
+# 信息流有效表 - 步骤索引对照表
+
+## 整体流程
+
+```
+步骤0 检查文件（有效表 + 投放数据路径）
+  → 步骤0b 检查目标日是否已有数据（有则本次覆盖）
+  → 步骤1 备份有效表
+  → 步骤2 CRM 导出信息流线索池
+  → 步骤2b CRM 导出建档客户池
+  → 步骤3 处理导出数据
+  → 步骤4 只读投放数据账户消费
+  → 步骤5 更新有效表（总表/平台/消费）
+  → 步骤6 保存有效表（原地覆盖）
+  → 步骤7 存档 CRM 原表到完成/
+```
+
+## 详细步骤索引
+
+| 步骤 | 文件 | 作用 | 可改内容 |
+| --- | --- | --- | --- |
+| 0 | daily_report.py → report_paths_for_date | 按月份解析两个 Excel 路径 | CURSOR_PROJECT_DIR、文件名模板 |
+| 0b | daily_report.py → count_zongbiao_rows_for_date | 提示是否覆盖；步骤5 先删目标日旧行再写入 | remove_zongbiao_rows_for_date |
+| 1 | daily_report.py → backup_file | 备份有效表 | 备份命名规则 |
+| 2 | daily_report.py → run_crm_export | Playwright 登录 CRM 导出线索池 | CRM_URL、账号密码 |
+| 2b | daily_report.py → run_crm_export_jianDang | 导出建档客户池 | 三级渠道筛选逻辑 |
+| 3 | daily_report.py → process_exported_file / process_jianDang_file | 筛选、去重、改标签 | VALID_PLATFORMS、CRM_COLUMNS |
+| 4 | daily_report.py → read_toufang_account_data | 只读 cursor 投放数据账户项目 N/O 列 | 公式求值器 FormulaEvaluator |
+| 5 | daily_report.py → update_shenzhen_file / fill_consume_sheet | 追加总表、更新平台日期、写消费 | ZONGBIAO_COLUMNS |
+| 6 | daily_report.py → save_encrypted_workbook | 加密保存有效表 | EXCEL_PASSWORD |
+| 7 | daily_report.py → main 末尾 | 复制 CRM 原表到完成/ | DONE_DIR |
+| 入口 | run.bat | 双击运行 | Python 路径 |
+| 补跑 | backfill_0902_0903.py | 连续补跑指定日期 | 日期列表 |
+
+## 快速查询
+
+| 我想改什么 | 对应文件 |
+| --- | --- |
+| CRM 地址或账号 | daily_report.py 顶部 CRM_URL / CRM_USER / CRM_PASS |
+| 有效表放哪里 | daily_report.py → report_paths_for_date（本项目根目录） |
+| 投放数据从哪读 | daily_report.py → CURSOR_PROJECT_DIR |
+| 平台筛选规则 | daily_report.py → VALID_PLATFORMS、process_exported_file |
+| 补跑某一天 | python daily_report.py 2026-09-05 |
+| 总表重复行修复 | python fix_sanfang_dedup.py（重跑导致电话+创建日期重复时） |
+| 线下三方三补写 | python fix_offline_missing.py [日期]（漏掉建档≠昨天的线下留资时） |
+| 一键运行 | 双击 run.bat |
+| 定时运行 | `01_一键运行/定时静默运行.bat`（经浏览器锁） |
+| 创建计划任务 | `01_一键运行/创建Windows计划任务.bat` → 任务名 `信息流有效表_每天15点` |
+| 总后台入口 | 运营自动化管理后台 → 日报中心 → 信息流有效表 |

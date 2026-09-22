@@ -1,0 +1,17 @@
+{
+  "_说明": "生产路径上关键文件的 SHA256 指纹；不含凭据内容。daily_report.py 因内嵌 CRM/Excel 凭据不纳入 Git 跟踪。",
+  "generated_for": "Batch4A Recovery03 versioning bootstrap",
+  "files": {
+    "daily_report.py": {
+      "path": "daily_report.py",
+      "tracked_in_git": false,
+      "exclusion_reason": "embedded_crm_and_excel_credentials",
+      "sha256": "4782FBDD0C3EF4AAFE207094BCBBAB49B7B78F6CAA1CC358AAD543751FC18C2B"
+    },
+    "crm_export_artifact_gate.py": {
+      "path": "crm_export_artifact_gate.py",
+      "tracked_in_git": true,
+      "sha256": "3D360EE919443D11DA0F25AC352B7644EB35CBD0C5C4531FCD8F24CCA0CEB891"
+    }
+  }
+}
