@@ -1,17 +1,23 @@
 {
-  "_说明": "生产路径上关键文件的 SHA256 指纹；不含凭据内容。daily_report.py 因内嵌 CRM/Excel 凭据不纳入 Git 跟踪。",
-  "generated_for": "Batch4A Recovery03 versioning bootstrap",
+  "_说明": "生产关键文件 SHA256；daily_report.py 已去敏并纳入 Git。凭据仅存 Windows Credential Manager。",
+  "generated_for": "Batch4A Recovery04 credential externalization",
+  "credential_targets": {
+    "crm": "AI-MAIYA/EffectiveTableCRM",
+    "excel": "AI-MAIYA/EffectiveTableExcel"
+  },
   "files": {
     "daily_report.py": {
-      "path": "daily_report.py",
-      "tracked_in_git": false,
-      "exclusion_reason": "embedded_crm_and_excel_credentials",
-      "sha256": "4782FBDD0C3EF4AAFE207094BCBBAB49B7B78F6CAA1CC358AAD543751FC18C2B"
+      "tracked_in_git": true,
+      "sha256": "d72524775bd466202559e741b2b6d83ee249a03bf01e4b7a7876b6bb3e44f053"
+    },
+    "credential_provider.py": {
+      "tracked_in_git": true,
+      "sha256": "8f2164024512c4dddae7ba76d1d490bc67f2a2ed6beedacf0076f611355c4daf"
     },
     "crm_export_artifact_gate.py": {
-      "path": "crm_export_artifact_gate.py",
       "tracked_in_git": true,
-      "sha256": "3D360EE919443D11DA0F25AC352B7644EB35CBD0C5C4531FCD8F24CCA0CEB891"
+      "sha256": "3d360ee919443d11da0f25ac352b7644eb35cbd0c5c4531fcd8f24cca0ceb891"
     }
-  }
+  },
+  "VALID_PLATFORMS_normalized_sha256": "d3691bb04ede5decd22966bec002046fe9d9f86ebe1bfeeefaca6e03c5aedb52"
 }

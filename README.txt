@@ -25,6 +25,12 @@
 pip install openpyxl msoffcrypto-tool playwright pywin32
 playwright install chromium
 
+[凭据（Windows Credential Manager）]
+- CRM：目标名 AI-MAIYA/EffectiveTableCRM（用户名 + 密码）
+- 有效表 Excel 加密：AI-MAIYA/EffectiveTableExcel
+- 首次从旧版 daily_report 迁移：python setup_effective_table_credentials.py
+- 说明见 .env.example（仅占位符，不含真实密码）
+
 [Requirements]
 - 内网 CRM 可访问（192.168.10.16:8899）
 - 投放数据由「深圳信息流报表-cursor」项目维护，本脚本只读

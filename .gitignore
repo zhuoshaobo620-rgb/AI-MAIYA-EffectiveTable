@@ -1,8 +1,7 @@
 # 信息流有效表 — 最小安全跟踪范围（Batch4A Recovery03）
 # 禁止追踪：凭据、生产 Excel、CRM 导出、运行时产物、缓存
 
-# 凭据与含内嵌密钥的 production 主文件（见 PRODUCTION_CODE_FINGERPRINTS.json）
-daily_report.py
+# 历史备份（可能仍含内嵌凭据）
 daily_report.py.backup.*
 *.backup.*
 
