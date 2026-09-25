@@ -1771,6 +1771,12 @@ def main():
     print("\n3. 处理导出文件...")
     if is_source_native_zero_evidence_path(exported_file):
         data_rows = []
+        导出结构门 = {
+            "EXPORT_ARTIFACT_STRUCTURE_VALID": "PASS",
+            "data_row_count": 0,
+            "source_native_zero_evidence": True,
+            "reason": "source_native_explicit_zero_json",
+        }
         print("  SOURCE_NATIVE_RAW_ROW_COUNT=0", flush=True)
         print("  CRM 信息流线索池 source-native explicit zero，跳过非空 xlsx 结构门", flush=True)
     else:
