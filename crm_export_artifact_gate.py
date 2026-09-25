@@ -201,3 +201,94 @@ def assert_export_process_yield(
             "raw_data_row_count": raw,
         }
     return None
+
+
+SOURCE_NATIVE_ZERO_EVIDENCE_FILENAME = "crm_source_native_zero_evidence.json"
+SOURCE_NATIVE_ZERO_EVIDENCE_CONTRACT = "SOURCE_NATIVE_ZERO_EVIDENCE_V1"
+ZERO_EVIDENCE_ARTIFACT_KIND = "ZERO_EVIDENCE_ARTIFACT"
+
+
+def is_source_native_zero_evidence_path(path: str | Path) -> bool:
+    return Path(path).name == SOURCE_NATIVE_ZERO_EVIDENCE_FILENAME
+
+
+def write_source_native_zero_evidence(
+    download_dir: str | Path,
+    *,
+    business_date: str,
+    ui_start_readback: str,
+    ui_end_readback: str,
+    query_timestamp: str,
+    ui_state: str,
+    record_count_evidence: int,
+    screenshot_fingerprint_sha256: str | None = None,
+    refresh_evidence: dict[str, Any] | None = None,
+) -> Path:
+    """写入确定性 source-native zero 证据 JSON（非伪装为非空 CRM xlsx）。"""
+    目录 = Path(download_dir)
+    目录.mkdir(parents=True, exist_ok=True)
+    路径 = 目录 / SOURCE_NATIVE_ZERO_EVIDENCE_FILENAME
+    载荷 = {
+        "artifact_kind": ZERO_EVIDENCE_ARTIFACT_KIND,
+        "contract_version": SOURCE_NATIVE_ZERO_EVIDENCE_CONTRACT,
+        "source_native_zero": True,
+        "raw_row_count": 0,
+        "business_date": str(business_date)[:10],
+        "requested_period_start": str(business_date)[:10],
+        "requested_period_end": str(business_date)[:10],
+        "ui_start_readback": ui_start_readback,
+        "ui_end_readback": ui_end_readback,
+        "query_timestamp": query_timestamp,
+        "ui_state": ui_state,
+        "record_count_evidence": int(record_count_evidence),
+        "screenshot_fingerprint_sha256": screenshot_fingerprint_sha256,
+        "refresh_evidence": refresh_evidence or {},
+        "technical_failure_flag": False,
+    }
+    import json
+
+    路径.write_text(json.dumps(载荷, ensure_ascii=False, indent=2), encoding="utf-8")
+    return 路径
+
+
+def load_source_native_zero_evidence(path: str | Path) -> dict[str, Any]:
+    import json
+
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def validate_source_native_zero_evidence(payload: dict[str, Any]) -> dict[str, Any]:
+    """评估证据包是否满足 source-native explicit zero（fail-closed）。"""
+    失败: list[str] = []
+    if payload.get("artifact_kind") != ZERO_EVIDENCE_ARTIFACT_KIND:
+        失败.append("artifact_kind_mismatch")
+    if payload.get("contract_version") != SOURCE_NATIVE_ZERO_EVIDENCE_CONTRACT:
+        失败.append("contract_version_mismatch")
+    if payload.get("source_native_zero") is not True:
+        失败.append("source_native_zero_flag_missing")
+    if payload.get("raw_row_count") is None or int(payload.get("raw_row_count")) != 0:
+        失败.append("raw_row_count_not_zero")
+    日 = str(payload.get("business_date") or "")[:10]
+    开始 = str(payload.get("ui_start_readback") or "")[:10]
+    结束 = str(payload.get("ui_end_readback") or "")[:10]
+    if not 日 or 开始 != 日 or 结束 != 日:
+        失败.append("period_not_exact")
+    if payload.get("technical_failure_flag"):
+        失败.append("technical_failure_flag_set")
+    if payload.get("record_count_evidence") is None or int(payload.get("record_count_evidence")) != 0:
+        失败.append("record_count_evidence_not_zero")
+    ui_state = str(payload.get("ui_state") or "")
+    if ui_state not in {"UI_EXPLICIT_ZERO", "SOURCE_NATIVE_ZERO_CONFIRMED"}:
+        失败.append("ui_state_not_explicit_zero")
+    刷新 = payload.get("refresh_evidence") or {}
+    if 刷新.get("query_refresh_confirmed") is not True:
+        失败.append("query_refresh_not_confirmed")
+    if 刷新.get("stale_ui_risk") is True:
+        失败.append("stale_ui_risk")
+    有效 = not 失败
+    return {
+        "SOURCE_NATIVE_ZERO_EVIDENCE_VALID": "PASS" if 有效 else "BLOCKED",
+        "evidence_fingerprint_sha256": payload.get("evidence_fingerprint_sha256"),
+        "failures": 失败 or None,
+        "contract_version": SOURCE_NATIVE_ZERO_EVIDENCE_CONTRACT,
+    }

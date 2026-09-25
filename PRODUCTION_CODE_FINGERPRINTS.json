@@ -1,6 +1,6 @@
 {
   "_说明": "生产关键文件 SHA256；daily_report.py 已去敏并纳入 Git。凭据仅存 Windows Credential Manager。",
-  "generated_for": "Batch4A Recovery04 credential externalization",
+  "generated_for": "Batch4B Recovery01 source-native CRM zero-row contract",
   "credential_targets": {
     "crm": "AI-MAIYA/EffectiveTableCRM",
     "excel": "AI-MAIYA/EffectiveTableExcel"
@@ -8,7 +8,7 @@
   "files": {
     "daily_report.py": {
       "tracked_in_git": true,
-      "sha256": "d72524775bd466202559e741b2b6d83ee249a03bf01e4b7a7876b6bb3e44f053"
+      "sha256": "ee7c2d56e0100608ea9b198fd9852c4476f09839bb51ef713d337730687085b2"
     },
     "credential_provider.py": {
       "tracked_in_git": true,
@@ -16,7 +16,7 @@
     },
     "crm_export_artifact_gate.py": {
       "tracked_in_git": true,
-      "sha256": "3d360ee919443d11da0f25ac352b7644eb35cbd0c5c4531fcd8f24cca0ceb891"
+      "sha256": "8b4bedb6634cdf6cb0c6eb56e7b96eee01f5870c7dcaaa3e0fbf02d3db816451"
     }
   },
   "VALID_PLATFORMS_normalized_sha256": "d3691bb04ede5decd22966bec002046fe9d9f86ebe1bfeeefaca6e03c5aedb52"

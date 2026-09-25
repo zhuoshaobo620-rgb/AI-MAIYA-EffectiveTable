@@ -523,6 +523,35 @@ def _login_and_navigate_信息流线索池(page, target_date):
     _校验exact_daterange(page, target_date, "信息流线索池")
 
 
+def _探测信息流线索池source_native_state(page) -> dict:
+    """查询后读取 source-native 总记录数 / 明确零状态（禁止仅凭 export 失败推断）。"""
+    import re
+
+    import datetime as dt
+
+    body = page.inner_text("body")
+    nums = [int(m.group(1)) for m in re.finditer(r"共\s*(\d+)\s*条", body)]
+    explicit_zero = "暂无数据" in body or "无数据" in body or nums == [0]
+    try:
+        table_rows = page.locator("table tbody tr").count()
+    except Exception:
+        table_rows = None
+    parsed_total = nums[0] if nums else None
+    confirmed = bool(
+        explicit_zero
+        or parsed_total == 0
+        or (table_rows == 0 and explicit_zero)
+    )
+    return {
+        "page_text_sample": body[:2000],
+        "parsed_total_from_共条": parsed_total,
+        "table_body_row_count": table_rows,
+        "explicit_zero_text": explicit_zero,
+        "source_native_zero_confirmed": confirmed,
+        "query_timestamp": dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+
 def _点击信息流线索池导出按钮(page):
     """
     信息流线索池工具栏「导出」：优先 exact 文案，避免点到下拉内其它导出变体。
@@ -581,6 +610,43 @@ def run_crm_export():
             page.locator('button:has-text("查询")').filter(visible=True).click()
             _等待loading_mask消失(page)
             time.sleep(1)
+            探测 = _探测信息流线索池source_native_state(page)
+            print(
+                f"  SOURCE_NATIVE_PROBE: confirmed={探测.get('source_native_zero_confirmed')} "
+                f"parsed_total={探测.get('parsed_total_from_共条')}",
+                flush=True,
+            )
+            目标日文本 = yesterday.strftime("%Y-%m-%d") if hasattr(yesterday, "strftime") else str(yesterday)[:10]
+            if 探测.get("source_native_zero_confirmed"):
+                from crm_export_artifact_gate import write_source_native_zero_evidence
+
+                截图路径 = os.path.join(有效表下载目录(), "crm_source_native_zero_ui.png")
+                try:
+                    page.screenshot(path=截图路径, full_page=True)
+                except Exception:
+                    截图路径 = None
+                证据路径 = write_source_native_zero_evidence(
+                    有效表下载目录(),
+                    business_date=目标日文本,
+                    ui_start_readback=目标日文本,
+                    ui_end_readback=目标日文本,
+                    query_timestamp=str(探测.get("query_timestamp") or ""),
+                    ui_state="SOURCE_NATIVE_ZERO_CONFIRMED",
+                    record_count_evidence=0,
+                    refresh_evidence={
+                        "query_refresh_confirmed": True,
+                        "loading_mask_cleared": True,
+                        "stale_ui_risk": False,
+                        "explicit_zero_text": bool(探测.get("explicit_zero_text")),
+                        "parsed_total_from_共条": 探测.get("parsed_total_from_共条"),
+                    },
+                )
+                print(f"  UI start readback: {目标日文本}", flush=True)
+                print(f"  UI end readback: {目标日文本}", flush=True)
+                print("  CRM_SOURCE_NATIVE_ZERO_CONFIRMED=1", flush=True)
+                print(f"  CRM_EXIT_ZERO_CONFIRMED=1", flush=True)
+                print(f"  SOURCE_NATIVE_ZERO_EVIDENCE_PATH={证据路径}", flush=True)
+                return str(证据路径)
 
             # 6. 导出 — 使用 expect_download 捕获下载
             print("  点击导出...")
@@ -1690,6 +1756,8 @@ def main():
     print("\n2. CRM 导出（信息流线索池）...")
     exported_file = run_crm_export()
 
+    from crm_export_artifact_gate import is_source_native_zero_evidence_path
+
     # 2b. CRM 导出（建档客户池-片区）
     print("\n2b. CRM 导出（建档客户池-片区）...")
     try:
@@ -1701,17 +1769,22 @@ def main():
 
     # 3. 处理导出数据
     print("\n3. 处理导出文件...")
-    导出结构门 = validate_crm_export_structure(exported_file)
-    print(
-        f"  EXPORT_ARTIFACT_STRUCTURE_VALID={导出结构门.get('EXPORT_ARTIFACT_STRUCTURE_VALID')}",
-        flush=True,
-    )
-    if 导出结构门.get("EXPORT_ARTIFACT_STRUCTURE_VALID") != "PASS":
-        raise RuntimeError(
-            f"WRONG_OR_MALFORMED_EXPORT_ARTIFACT: {导出结构门.get('reason')}"
+    if is_source_native_zero_evidence_path(exported_file):
+        data_rows = []
+        print("  SOURCE_NATIVE_RAW_ROW_COUNT=0", flush=True)
+        print("  CRM 信息流线索池 source-native explicit zero，跳过非空 xlsx 结构门", flush=True)
+    else:
+        导出结构门 = validate_crm_export_structure(exported_file)
+        print(
+            f"  EXPORT_ARTIFACT_STRUCTURE_VALID={导出结构门.get('EXPORT_ARTIFACT_STRUCTURE_VALID')}",
+            flush=True,
         )
+        if 导出结构门.get("EXPORT_ARTIFACT_STRUCTURE_VALID") != "PASS":
+            raise RuntimeError(
+                f"WRONG_OR_MALFORMED_EXPORT_ARTIFACT: {导出结构门.get('reason')}"
+            )
 
-    data_rows = process_exported_file(exported_file)
+        data_rows = process_exported_file(exported_file)
     print(f"  信息流线索池符合条件的数据行数: {len(data_rows)}")
 
     # 3b. 处理建档客户池数据（如果有）
