@@ -1,6 +1,6 @@
 {
   "_说明": "生产关键文件 SHA256；daily_report.py 已去敏并纳入 Git。凭据仅存 Windows Credential Manager。",
-  "generated_for": "Batch4B Recovery02 zero-row pipeline yield gate fix",
+  "generated_for": "Batch4B Recovery18 dataset_scope_zero_exact gate",
   "credential_targets": {
     "crm": "AI-MAIYA/EffectiveTableCRM",
     "excel": "AI-MAIYA/EffectiveTableExcel"
@@ -8,7 +8,11 @@
   "files": {
     "daily_report.py": {
       "tracked_in_git": true,
-      "sha256": "d22a13b2b2716581aaa857cd492052dcf895cfab309149ef0ac6eba83e75b725"
+      "sha256": "b1d00a1ff464439c6cd26f18b75dc2a65e07bb91be4be5453e2b56cc8af5c3f3"
+    },
+    "dataset_scope_zero_gate.py": {
+      "tracked_in_git": true,
+      "sha256": "31152dd35c2c046fc78e2c0111e6a1c949f9a6d5ec74266af193110a77de06f4"
     },
     "credential_provider.py": {
       "tracked_in_git": true,

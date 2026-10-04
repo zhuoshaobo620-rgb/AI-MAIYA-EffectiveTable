@@ -1818,11 +1818,35 @@ def main():
         jianDang_row_count=len(jianDang_rows),
     )
     if 零产出:
-        print(f"  EXPORT_PROCESS_YIELD=FAIL code={零产出.get('code')}", flush=True)
-        raise RuntimeError(
-            f"{零产出.get('code')}: {零产出.get('reason')} "
-            f"(raw_rows={零产出.get('raw_data_row_count')})"
+        from dataset_scope_zero_gate import (
+            evaluate_dataset_scope_zero_exact,
+            write_dataset_scope_zero_evidence,
         )
+
+        目标日文本 = yesterday.strftime("%Y-%m-%d") if hasattr(yesterday, "strftime") else str(yesterday)[:10]
+        范围零评估 = evaluate_dataset_scope_zero_exact(
+            exported_file,
+            目标日文本,
+            structure_gate=导出结构门,
+        )
+        if 范围零评估.get("DATASET_SCOPE_ZERO_EXACT") == "PASS":
+            证据路径 = write_dataset_scope_zero_evidence(
+                有效表下载目录(),
+                business_date=目标日文本,
+                export_path=exported_file,
+                evaluation=范围零评估,
+            )
+            data_rows = []
+            all_data_rows = []
+            print("  DATASET_SCOPE_ZERO_EXACT=PASS", flush=True)
+            print("  CRM_DATASET_SCOPE_ZERO_EXACT=1", flush=True)
+            print(f"  DATASET_SCOPE_ZERO_EVIDENCE_PATH={证据路径}", flush=True)
+        else:
+            print(f"  EXPORT_PROCESS_YIELD=FAIL code={零产出.get('code')}", flush=True)
+            raise RuntimeError(
+                f"{零产出.get('code')}: {零产出.get('reason')} "
+                f"(raw_rows={零产出.get('raw_data_row_count')})"
+            )
 
     # 4. 只读投放数据，读取账户项目数据 N/O 列消费（不修改原表）
     print("\n4. 读取投放数据账户消费（只读，不修改原表）...")
